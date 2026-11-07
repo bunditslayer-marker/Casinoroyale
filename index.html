@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2b0f15">
+  <meta name="description" content="A private Texas Hold'em table for you and your friends. Play chips only.">
+  <title>Black Tie Poker</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f4a37'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%23f4ecdb'%3E%E2%99%A0%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Shared gold for the founder's crown -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff3c4"/><stop offset=".38" stop-color="#e8c977"/><stop offset=".7" stop-color="#c79b45"/><stop offset="1" stop-color="#8a6324"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- Home: create or join a table -->
+  <main id="home" class="home">
+    <div class="hero-cards" aria-hidden="true">
+      <div class="card hero l"><span class="r">A</span><span class="s">♠</span></div>
+      <div class="card hero red r"><span class="r">K</span><span class="s">♥</span></div>
+    </div>
+    <h1 class="title">Black Tie Poker</h1>
+    <p class="lede">A private Texas Hold'em table for you and your friends. Play chips only, no real money.</p>
+
+    <form id="homeForm" class="home-form" autocomplete="off">
+      <label class="field">
+        <span>Your name</span>
+        <input id="nameInput" maxlength="14" autocomplete="nickname" placeholder="e.g. Marker" required>
+      </label>
+
+      <div class="path create-path">
+        <button class="btn brass" id="createBtn" type="button">Create a table</button>
+        <details class="options">
+          <summary>Table options</summary>
+          <div class="settings-grid">
+            <label class="field small"><span>Small blind</span><input type="number" id="optSB" min="1" inputmode="numeric" value="10"></label>
+            <label class="field small"><span>Big blind</span><input type="number" id="optBB" min="1" inputmode="numeric" value="20"></label>
+            <label class="field small"><span>Ante</span><input type="number" id="optAnte" min="0" inputmode="numeric" value="0"></label>
+          </div>
+          <div class="quick" data-for="opt" aria-label="Blind presets">
+            <button type="button" data-blinds="1/2">1/2</button><button type="button" data-blinds="5/10">5/10</button><button type="button" data-blinds="10/20">10/20</button><button type="button" data-blinds="25/50">25/50</button><button type="button" data-blinds="50/100">50/100</button>
+          </div>
+          <div class="settings-grid two">
+            <label class="field small"><span>Starting chips</span><input type="number" id="optChips" min="2" inputmode="numeric" value="1000"></label>
+            <label class="field small"><span>Turn timer</span>
+              <select id="optTimer"><option value="15">15 sec</option><option value="30" selected>30 sec</option><option value="60">60 sec</option><option value="0">Off</option></select>
+            </label>
+          </div>
+        </details>
+      </div>
+
+      <div class="divider"><span>or join a friend</span></div>
+
+      <div class="path join-path">
+        <label class="field code-field">
+          <span>Table code</span>
+          <input id="codeInput" maxlength="4" autocapitalize="characters" spellcheck="false" placeholder="ABCD">
+        </label>
+        <button class="btn ghost" id="joinBtn" type="submit">Join table</button>
+      </div>
+    </form>
+    <p class="fine">Up to 8 players. Everyone plays from their own phone.</p>
+  </main>
+
+  <!-- The table -->
+  <div id="game" class="game" hidden>
+    <header class="bar">
+      <button class="code-btn" id="inviteBtn" type="button">
+        <span class="code-label">Table</span><b id="codeText"></b><span class="invite">Invite</span>
+      </button>
+      <div class="blinds" id="blindsText"></div>
+      <button class="icon-btn admin-btn" id="adminBtn" type="button" aria-label="Admin settings" hidden>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 18.5h18L19.6 7.8l-4.8 4.1L12 5.5l-2.8 6.4-4.8-4.1z" fill="currentColor"/><rect x="3" y="19.8" width="18" height="1.8" rx=".9" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" id="menuBtn" type="button" aria-label="Menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <i class="dot" id="unreadDot" hidden></i>
+      </button>
+    </header>
+
+    <section class="table-area" id="tableArea">
+      <div class="felt">
+        <div class="center" id="center"></div>
+      </div>
+      <div class="seats" id="seats"></div>
+    </section>
+
+    <section class="me" id="mePanel"></section>
+    <section class="actions" id="actions"></section>
+  </div>
+
+  <!-- Menu -->
+  <dialog class="sheet" id="menuSheet">
+    <div class="sheet-head"><h2>Table menu</h2><button class="icon-btn close" data-close aria-label="Close">×</button></div>
+    <div class="menu-list">
+      <button class="menu-item" id="mInvite" type="button">Invite friends</button>
+      <button class="menu-item" id="mLog" type="button">Hand log and chat</button>
+      <button class="menu-item" id="mSitOut" type="button">Sit out next hand</button>
+      <button class="menu-item" id="mSettings" type="button" hidden>Admin settings</button>
+      <button class="menu-item" id="mSound" type="button">Sound: on</button>
+    </div>
+    <h3 class="standings-title">Standings</h3>
+    <ol class="standings" id="standings"></ol>
+    <button class="btn ghost danger" id="mLeave" type="button">Leave table</button>
+  </dialog>
+
+  <!-- Log and chat -->
+  <dialog class="sheet" id="logSheet">
+    <div class="sheet-head"><h2>Hand log and chat</h2><button class="icon-btn close" data-close aria-label="Close">×</button></div>
+    <ol class="log" id="logList"></ol>
+    <form class="chat" id="chatForm" autocomplete="off">
+      <input id="chatInput" maxlength="140" placeholder="Say something to the table">
+      <button class="btn brass" type="submit">Send</button>
+    </form>
+  </dialog>
+
+  <!-- Admin settings -->
+  <dialog class="sheet" id="settingsSheet">
+    <div class="sheet-head"><h2>Admin settings</h2><button class="icon-btn close" data-close aria-label="Close">×</button></div>
+
+    <section class="group">
+      <h3>Blinds and ante</h3>
+      <p class="hint">Applies from the next hand. The ante is optional: everyone puts it in before the cards are dealt.</p>
+      <div class="settings-grid">
+        <label class="field small"><span>Small blind</span><input type="number" id="setSB" min="1" inputmode="numeric"></label>
+        <label class="field small"><span>Big blind</span><input type="number" id="setBB" min="1" inputmode="numeric"></label>
+        <label class="field small"><span>Ante</span><input type="number" id="setAnte" min="0" inputmode="numeric"></label>
+      </div>
+      <div class="quick" data-for="set" aria-label="Blind presets">
+        <button type="button" data-blinds="1/2">1/2</button><button type="button" data-blinds="5/10">5/10</button><button type="button" data-blinds="10/20">10/20</button><button type="button" data-blinds="25/50">25/50</button><button type="button" data-blinds="50/100">50/100</button><button type="button" data-blinds="100/200">100/200</button>
+      </div>
+    </section>
+
+    <section class="group">
+      <h3>Chips and timer</h3>
+      <div class="settings-grid two">
+        <label class="field small"><span>Starting chips</span><input type="number" id="setChips" min="2" inputmode="numeric"></label>
+        <label class="field small"><span>Turn timer</span>
+          <select id="setTimer"><option value="15">15 sec</option><option value="20">20 sec</option><option value="30">30 sec</option><option value="45">45 sec</option><option value="60">60 sec</option><option value="90">90 sec</option><option value="0">Off</option></select>
+        </label>
+      </div>
+      <p class="hint">Starting chips are used for new players and rebuys.</p>
+    </section>
+
+    <section class="group">
+      <h3>Table colour</h3>
+      <div class="swatches" id="feltSwatches" role="radiogroup" aria-label="Table colour"></div>
+    </section>
+
+    <section class="group">
+      <h3>Background colour</h3>
+      <div class="swatches" id="roomSwatches" role="radiogroup" aria-label="Background colour"></div>
+    </section>
+
+    <div class="sheet-actions">
+      <button class="btn ghost" data-close type="button">Cancel</button>
+      <button class="btn brass" id="saveSettings" type="button">Save for everyone</button>
+    </div>
+  </dialog>
+
+  <!-- Secret code for the reserved name -->
+  <dialog class="sheet" id="codeSheet">
+    <div class="sheet-head"><h2>Reserved name</h2><button class="icon-btn close" data-close aria-label="Close">×</button></div>
+    <p class="hint">Only the founder can play under this name. Enter the secret code, or go back and pick another name.</p>
+    <form id="codeForm" class="code-form" autocomplete="off">
+      <label class="field"><span>Secret code</span><input id="ownerInput" type="password" autocomplete="off" spellcheck="false" required></label>
+      <label class="check"><input type="checkbox" id="ownerRemember" checked> Remember on this phone</label>
+      <p class="err" id="codeErr" role="alert"></p>
+      <div class="sheet-actions">
+        <button class="btn ghost" type="button" id="codeBack">Pick another name</button>
+        <button class="btn brass" type="submit">Unlock</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="sr-only" id="announcer" aria-live="assertive"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
